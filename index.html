@@ -9,40 +9,30 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#e8192c" />
+
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <body>
-
-  <!-- your entire app UI -->
-
-  <!-- 🔊 SIREN SOUND -->
-  <audio id="sirenSound" src="siren.mp3" preload="auto"></audio>
-
-  <!-- your scripts -->
-  <script src="firebase-config.js"></script>
-  <script src="app.js"></script>
-
-</body>
-
   <!-- AUTH -->
   <div id="authSection" class="auth-box">
-  <div id="authForm">
-    <h2>Login / Sign Up</h2>
-    <input id="email" type="email" placeholder="Enter email" autocomplete="email" />
-    <input id="password" type="password" placeholder="Enter password" autocomplete="current-password" />
-    <div class="auth-actions">
-      <button type="button" onclick="signup()">Sign Up</button>
-      <button type="button" onclick="login()">Login</button>
+    <div id="authForm">
+      <h2>Login / Sign Up</h2>
+      <input id="email" type="email" placeholder="Enter email" autocomplete="email" />
+      <input id="password" type="password" placeholder="Enter password" autocomplete="current-password" />
+      <div class="auth-actions">
+        <button type="button" onclick="signup()">Sign Up</button>
+        <button type="button" onclick="login()">Login</button>
+      </div>
+      <p id="authStatus">Not logged in</p>
     </div>
-    <p id="authStatus">Not logged in</p>
-  </div>
 
-  <div id="loggedInBar" class="hidden">
-    <span id="loggedInText">Logged in</span>
-    <button type="button" onclick="logout()">Logout</button>
+    <div id="loggedInBar" class="hidden">
+      <span id="loggedInText">Logged in</span>
+      <button type="button" onclick="logout()">Logout</button>
+    </div>
   </div>
-</div>
 
   <!-- NAV -->
   <nav class="navbar">
@@ -67,8 +57,6 @@
   <!-- DASHBOARD -->
   <section id="dashboard" class="page active">
     <div class="page-grid">
-
-      <!-- Left Column -->
       <div class="left-col">
         <div class="greeting-card">
           <p class="greeting-sub">Good to see you,</p>
@@ -76,18 +64,38 @@
           <p class="greeting-msg">Your emergency system is <strong>active</strong> and monitoring.</p>
         </div>
 
-        <!-- PANIC BUTTON -->
         <div class="panic-wrap">
           <div class="panic-ring ring3"></div>
           <div class="panic-ring ring2"></div>
           <div class="panic-ring ring1"></div>
           <button id="panicBtn" class="panic-btn" type="button" onclick="triggerAlert()">
             <span class="panic-label">SOS</span>
-            <span class="panic-sub">Hold to alert</span>
+            <span class="panic-sub">Tap to alert</span>
           </button>
         </div>
+        <div class="sos-actions">
+          <button type="button" class="btn-primary" onclick="enablePushNotifications()">🔔 Enable Push</button>
+          <button type="button" class="btn-primary" onclick="startLiveTracking()">📍 Start Live Tracking</button>
+          <button type="button" class="btn-ghost" onclick="stopLiveTracking()">⏹ Stop Tracking</button>
+          <button type="button" class="btn-ghost" onclick="shareLiveTrackingLink()">🔗 Share Tracking Link</button>
+          <button type="button" class="btn-warning fake-call-btn" onclick="scheduleFakeCall()">📱 Fake Call (10s)</button>
+        </div>
 
-        <!-- QUICK STATS -->
+        <div class="sos-actions">
+          <button type="button" class="btn-primary" onclick="callPrimaryContact()">📞 Call Emergency Contact</button>
+          <label class="send-toggle">
+            <input type="checkbox" id="sendAllToggle" checked />
+            Send to all contacts
+          </label>
+          <label class="send-toggle">
+            <input type="checkbox" id="lowNetworkToggle" />
+            Low network mode
+          </label>
+        </div>
+        <button class="btn-primary" onclick="enablePush()" style="margin-top:15px;">
+  🔔 Enable Push Notifications
+</button>
+
         <div class="stat-row">
           <div class="stat-card">
             <span class="stat-num" id="contactCount">0</span>
@@ -98,13 +106,12 @@
             <span class="stat-label">Alerts Sent</span>
           </div>
           <div class="stat-card">
-            <span class="stat-num">24/7</span>
-            <span class="stat-label">Monitoring</span>
+            <span class="stat-num" id="networkStatus">Online</span>
+            <span class="stat-label">Network</span>
           </div>
         </div>
       </div>
 
-      <!-- Right Column -->
       <div class="right-col">
         <div class="map-card">
           <div class="map-header">
@@ -122,13 +129,17 @@
           <div class="alert-inner">
             <span class="alert-icon">🚨</span>
             <div>
-              <p class="alert-title">ALERT SENT</p>
-              <p class="alert-msg" id="alertMsg">Notifying your emergency contacts…</p>
+              <p class="alert-title">ALERT PREPARED</p>
+              <p class="alert-msg" id="alertMsg">Preparing your emergency message…</p>
             </div>
           </div>
         </div>
+        
+        <div id="audioRecording" class="audio-recording hidden">
+          <span class="pulse-red"></span>
+          <span>Recording audio...</span>
+        </div>
       </div>
-
     </div>
   </section>
 
@@ -162,7 +173,7 @@
 
       <div class="profile-card">
         <div class="avatar-wrap">
-          <div class="avatar" id="avatarInitial">A</div>
+          <div class="avatar" id="avatarInitial">B</div>
         </div>
 
         <div class="profile-form">
@@ -179,6 +190,11 @@
           <div class="form-group">
             <label for="profileMedical">Medical Info (optional)</label>
             <textarea id="profileMedical" placeholder="Blood group, allergies, conditions…"></textarea>
+          </div>
+
+          <div class="twilio-info-box">
+            <h4>Twilio SMS Configuration</h4>
+            <p>To enable background SMS, configure <code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, and <code>TWILIO_PHONE_NUMBER</code> in your Vercel Environment Variables.</p>
           </div>
 
           <button type="button" class="btn-primary" onclick="saveProfile()">Save Profile</button>
@@ -221,6 +237,15 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <label for="cPriority">Priority</label>
+        <select id="cPriority">
+          <option value="primary">Primary</option>
+          <option value="secondary">Secondary</option>
+          <option value="other" selected>Other</option>
+        </select>
+      </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn-primary" onclick="addContact()">Add Contact</button>
@@ -228,17 +253,15 @@
     </div>
   </div>
 
-  <!-- TOAST -->
   <div id="toast" class="toast hidden"></div>
 
-  <!-- GOOGLE MAPS -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYiHRGXwAjgkFA86_GbON0h9dSDTi1rJ8&callback=initMap" async defer></script>
-  <!-- FIREBASE -->
+  <audio id="sirenSound" src="siren.mp3" preload="auto"></audio>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYiHRGXwAjgkFA86_GbON0h9dSDTi1rJ8&callback=initMap" async defer></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-  <!-- APP FILES -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>
