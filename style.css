@@ -1,19 +1,19 @@
 :root {
-  --bg: #0a0c10;
-  --bg2: #111419;
-  --bg3: #181c23;
-  --border: #1f2430;
-  --red: #e8192c;
-  --red-glow: rgba(232, 25, 44, 0.25);
-  --red-dim: #7a0f18;
-  --green: #0dff8c;
-  --green-dim: rgba(13, 255, 140, 0.12);
-  --text: #e8eaf0;
-  --text2: #8891a4;
-  --text3: #4a5568;
+  --bg: #050505;
+  --bg2: rgba(20, 20, 25, 0.4);
+  --bg3: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
+  --red: #ff2a40;
+  --red-glow: rgba(255, 42, 64, 0.4);
+  --red-dim: rgba(255, 42, 64, 0.15);
+  --green: #00ff88;
+  --green-dim: rgba(0, 255, 136, 0.15);
+  --text: #ffffff;
+  --text2: #a0a5b5;
+  --text3: #6b7280;
   --accent: #ff6b35;
-  --card-shadow: 0 4px 32px rgba(0, 0, 0, 0.6);
-  --radius: 14px;
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --radius: 20px;
   --font-head: 'Syne', sans-serif;
   --font-body: 'DM Sans', sans-serif;
 }
@@ -57,9 +57,42 @@ body::before {
   gap: 2rem;
   padding: 0 2rem;
   height: 64px;
-  background: rgba(10,12,16,0.92);
+  background: rgba(10,12,16,0.6);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Ambient Background Glows */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+}
+.glow-1 {
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 42, 64, 0.2);
+  top: -100px;
+  left: -100px;
+}
+.glow-2 {
+  width: 500px;
+  height: 500px;
+  background: rgba(0, 255, 136, 0.15);
+  bottom: -200px;
+  right: -100px;
+}
+.glow-3 {
+  width: 300px;
+  height: 300px;
+  background: rgba(42, 130, 255, 0.15);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .logo {
@@ -161,6 +194,19 @@ body::before {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.greeting-card:hover,
+.map-card:hover,
+.contact-card:hover,
+.stat-card:hover,
+.history-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.02);
 }
 
 .greeting-card { padding: 1.5rem; }
@@ -192,10 +238,13 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2.5rem 1rem;
+  padding: 3.5rem 1rem;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
 }
 
 .panic-ring {
@@ -218,11 +267,11 @@ body::before {
 .panic-btn {
   position: relative;
   z-index: 2;
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   border: none;
-  background: radial-gradient(circle at 40% 35%, #ff3347, var(--red), #9b0015);
+  background: linear-gradient(135deg, #ff5163, #d9001b);
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -231,14 +280,19 @@ body::before {
   justify-content: center;
   gap: 2px;
   box-shadow:
-    0 0 0 3px rgba(232,25,44,0.3),
-    0 0 40px rgba(232,25,44,0.5),
-    0 12px 40px rgba(0,0,0,0.6);
-  transition: transform 0.15s, box-shadow 0.15s;
+    0 0 0 4px rgba(255, 42, 64, 0.2),
+    0 0 40px rgba(255, 42, 64, 0.6),
+    inset 0 4px 12px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .panic-btn:hover {
-  transform: scale(1.04);
+  transform: scale(1.08);
+  box-shadow:
+    0 0 0 8px rgba(255, 42, 64, 0.3),
+    0 0 60px rgba(255, 42, 64, 0.9),
+    inset 0 6px 15px rgba(255, 255, 255, 0.5);
 }
 
 .panic-btn.activated {
@@ -246,8 +300,8 @@ body::before {
 }
 
 @keyframes panic-flash {
-  0%,100% { box-shadow: 0 0 0 3px rgba(232,25,44,0.3), 0 0 40px rgba(232,25,44,0.5); }
-  50% { box-shadow: 0 0 0 10px rgba(232,25,44,0.5), 0 0 80px rgba(232,25,44,0.9); }
+  0%,100% { box-shadow: 0 0 0 4px rgba(255,42,64,0.3), 0 0 40px rgba(255,42,64,0.6); }
+  50% { box-shadow: 0 0 0 12px rgba(255,42,64,0.6), 0 0 100px rgba(255,42,64,1); }
 }
 
 .panic-label {
