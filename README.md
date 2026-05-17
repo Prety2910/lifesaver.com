@@ -5,7 +5,7 @@ A cloud-based emergency alert web application that helps users quickly send SOS 
 ---
 
 ## 🌐 Live Demo
-👉 https://lifesaver-cloud.web.app
+https://lifesaver-cloud.vercel.app/
 
 ---
 
